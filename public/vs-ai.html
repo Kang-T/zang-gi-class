@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI와 대국 · 장기교실</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="classroom.css" />
+  <!-- 엔진(window.Stockfish 전역)을 먼저 로드 -->
+  <script src="/vendor/stockfish.js"></script>
+</head>
+<body>
+  <div class="cls-app">
+    <div class="cls-topbar">
+      <a class="topbar-back" href="index.html">← 홈</a>
+      <div class="topbar-title">AI와 대국</div>
+      <div class="topbar-right"></div>
+    </div>
+
+    <!-- 대국 시작 설정 -->
+    <div id="setup" class="cls-setup">
+      <div class="setup-card">
+        <!-- 급수 카드 -->
+        <div class="rank-card">
+          <div class="rank-top">
+            <span class="rank-label">현재 내 급수</span>
+            <span class="rank-stat">최고 <b id="rank-best">15급</b> · 이긴 판 <b id="rank-wins">0</b></span>
+          </div>
+          <div class="rank-name" id="rank-name">15급</div>
+          <div class="rank-bar"><div class="rank-fill" id="rank-fill"></div></div>
+          <div class="rank-next" id="rank-next">이기면 14급으로 올라가요!</div>
+        </div>
+
+        <p class="setup-hint">컴퓨터랑 한 판 두고, 이기면 급수가 올라가요.</p>
+
+        <div class="setup-selects one">
+          <label>내 편 고르기
+            <select id="side-select">
+              <option value="w" selected>楚 초 — 내가 먼저 둬요</option>
+              <option value="b">漢 한 — AI가 먼저 둬요</option>
+            </select>
+          </label>
+        </div>
+
+        <details class="setup-adv">
+          <summary>차림 바꾸기 (마·상 배치)</summary>
+          <div class="setup-selects">
+            <label>楚 초 차림
+              <select id="cho-setup">
+                <option value="마상상마" selected>마상상마 (귀마)</option>
+                <option value="상마마상">상마마상 (면상)</option>
+                <option value="마상마상">마상마상</option>
+                <option value="상마상마">상마상마</option>
+              </select>
+            </label>
+            <label>漢 한 차림
+              <select id="han-setup">
+                <option value="마상상마" selected>마상상마 (귀마)</option>
+                <option value="상마마상">상마마상 (면상)</option>
+                <option value="마상마상">마상마상</option>
+                <option value="상마상마">상마상마</option>
+              </select>
+            </label>
+          </div>
+        </details>
+
+        <button id="start-btn" class="cls-btn big" disabled>불러오는 중…</button>
+        <div class="setup-foot">
+          <span id="engine-status" class="engine-status">엔진 준비 중…</span>
+          <button id="reset-rank-btn" class="linkbtn" type="button">급수 초기화</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 대국 화면 -->
+    <div id="game" class="cls-game hidden">
+      <div class="pinfo" id="pinfo-top">
+        <div class="pinfo-name"></div>
+        <div class="pinfo-captured"></div>
+        <div class="pinfo-score">0</div>
+      </div>
+
+      <div id="turn-banner" class="turn-banner">—</div>
+
+      <div class="board-wrap">
+        <svg id="board" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div id="check-fx"></div>
+        <div id="toast"></div>
+      </div>
+
+      <div class="pinfo" id="pinfo-bottom">
+        <div class="pinfo-name"></div>
+        <div class="pinfo-captured"></div>
+        <div class="pinfo-score">0</div>
+      </div>
+
+      <div class="cls-controls">
+        <button id="undo-btn" class="cls-btn">↩ 무르기</button>
+        <button id="flip-btn" class="cls-btn">↕ 판 돌리기</button>
+        <button id="restart-btn" class="cls-btn">🔄 다시</button>
+        <button id="resign-btn" class="cls-btn">🏳 항복</button>
+      </div>
+    </div>
+
+    <!-- 결과 오버레이 -->
+    <div id="win-overlay" class="win-overlay hidden">
+      <div class="win-box">
+        <div id="win-emoji" class="win-emoji">🎉</div>
+        <div id="win-title" class="win-title">승리!</div>
+        <div id="win-sub" class="win-sub"></div>
+        <div class="win-actions">
+          <button id="win-again" class="cls-btn big">🔄 다시 도전</button>
+          <button id="win-setup" class="cls-btn ghost" type="button">설정 바꾸기</button>
+          <a href="index.html" class="cls-btn ghost">홈으로</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="vs-ai.js"></script>
+</body>
+</html>
