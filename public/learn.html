@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>배우기 · 장기교실</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="classroom.css" />
+</head>
+<body>
+  <div class="cls-app">
+    <div class="cls-topbar">
+      <a class="topbar-back" href="index.html">← 홈</a>
+      <div class="topbar-title">배우기</div>
+      <div class="topbar-right"></div>
+    </div>
+
+    <!-- 커리큘럼(기물 목록) -->
+    <div id="curriculum">
+      <p class="learn-intro">기물 하나를 골라, <b>상대 병(兵)을 잡아 보며</b> 움직임을 익혀요.</p>
+      <div id="learn-grid" class="learn-grid"></div>
+    </div>
+
+    <!-- 레슨 화면 -->
+    <div id="lesson" class="cls-game hidden">
+      <div class="lesson-head">
+        <span id="lesson-glyph" class="lesson-glyph">車</span>
+        <div id="lesson-name" class="lesson-name">차</div>
+        <div id="lesson-desc" class="lesson-desc"></div>
+      </div>
+
+      <div id="task-banner" class="task-banner">—</div>
+
+      <div class="board-wrap">
+        <svg id="board" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div id="check-fx"></div>
+        <div id="toast"></div>
+      </div>
+
+      <div class="lesson-controls">
+        <button id="reset-btn" class="cls-btn">↺ 다시 놓기</button>
+        <button id="hint-btn" class="cls-btn">💡 힌트</button>
+        <button id="next-btn" class="cls-btn hidden">다음 기물 →</button>
+        <button id="list-btn" class="cls-btn">☰ 목록</button>
+      </div>
+    </div>
+
+    <!-- 전체 완료 축하 -->
+    <div id="done-overlay" class="win-overlay hidden">
+      <div class="win-box">
+        <div class="win-emoji">🎓</div>
+        <div class="win-title cho">장기 기물 박사!</div>
+        <div class="win-sub">일곱 기물을 모두 배웠어요. 이제 실전으로 가볼까요?</div>
+        <div class="win-actions">
+          <a href="vs-ai.html" class="cls-btn big">🤖 AI와 대국하러 가기</a>
+          <button id="done-again" class="cls-btn ghost" type="button">다시 복습하기</button>
+          <a href="index.html" class="cls-btn ghost">홈으로</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="learn.js"></script>
+</body>
+</html>

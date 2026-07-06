@@ -72,7 +72,7 @@ body { background: var(--bg); color: var(--text); }
 
 /* ===== 홈 화면 ===== */
 .home { max-width: 900px; margin: 0 auto; padding: 34px 18px 60px; }
-.home-head { text-align: center; margin-bottom: 34px; }
+.home-head { display: block; text-align: center; margin-bottom: 34px; }
 .home-logo { font-size: 46px; font-weight: 900; letter-spacing: 4px; }
 .home-logo .lg-cho { color: var(--blue); }
 .home-logo .lg-han { color: var(--red); }
@@ -286,6 +286,58 @@ body { background: var(--bg); color: var(--text); }
 .win-title.han { color: var(--red); }
 .win-sub { color: var(--text-soft); font-size: 15px; margin-bottom: 24px; }
 .win-actions { display: flex; flex-direction: column; gap: 10px; }
+
+/* ===== 배우기 (미니게임) ===== */
+.learn-intro { text-align: center; color: var(--text-soft); font-size: 15px; margin: 0 0 20px; }
+.learn-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px;
+}
+.learn-card {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
+  padding: 18px 14px; cursor: pointer; font-family: inherit; color: var(--text);
+  box-shadow: var(--shadow-sm); transition: transform .1s, border-color .15s, box-shadow .15s;
+}
+.learn-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--blue); }
+.learn-glyph {
+  width: 62px; height: 62px; border-radius: 18px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 34px; font-weight: 900; background: var(--surface-2);
+}
+.learn-card.cho .learn-glyph { color: var(--blue); background: var(--blue-soft); }
+.learn-card .learn-name { font-size: 17px; font-weight: 800; }
+.learn-card .learn-sub { font-size: 12.5px; color: var(--text-soft); }
+.learn-card.done { border-color: var(--green); }
+.learn-card.done .learn-glyph { background: var(--green-soft); color: var(--green); }
+.done-badge {
+  position: absolute; top: 10px; right: 10px;
+  background: var(--green); color: #fff; font-size: 12px; font-weight: 800;
+  width: 22px; height: 22px; border-radius: 999px; display: flex; align-items: center; justify-content: center;
+}
+
+/* 레슨 화면 */
+.lesson-head { text-align: center; margin-bottom: 6px; }
+.lesson-glyph {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 56px; height: 56px; border-radius: 16px;
+  background: var(--blue-soft); color: var(--blue); font-size: 30px; font-weight: 900;
+}
+.lesson-name { font-size: 22px; font-weight: 900; margin: 8px 0 4px; }
+.lesson-desc { color: var(--text-soft); font-size: 14.5px; line-height: 1.6; max-width: 460px; margin: 0 auto 4px; }
+.task-banner {
+  width: min(560px, calc(100vw - 36px));
+  text-align: center; font-size: 17px; font-weight: 800;
+  padding: 11px; border-radius: var(--r-md); margin-bottom: 4px;
+  background: var(--surface-2); border: 1px dashed var(--accent); color: var(--text);
+}
+.task-banner.ok { background: var(--green-soft); border-style: solid; border-color: var(--green); color: var(--green); }
+.lesson-progress { font-size: 13px; color: var(--muted); }
+.lesson-controls {
+  display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+  width: min(560px, calc(100vw - 36px)); margin-top: 4px;
+}
+.lesson-controls .cls-btn { flex: 1; min-width: 92px; padding: 12px 8px; }
 
 @media (max-width: 480px) {
   .home-title { font-size: 32px; }
