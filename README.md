@@ -1,7 +1,12 @@
-# 장기 훈수 도우미
+# 장기교실
 
-옆에서 장기를 두면서, 판 위의 돌을 직접 클릭해 옮기면 **다음에 둘 최선수를 화살표로 알려주는** 웹 프로그램입니다.
-엔진은 [Fairy-Stockfish](https://github.com/fairy-stockfish/Fairy-Stockfish)(장기 정식 지원)를 브라우저에서 WebAssembly로 구동합니다. 서버에 기보가 나가지 않고 전부 로컬에서 돌아갑니다.
+초등학교 교실에서 학생들이 장기를 배우고 즐길 수 있는 웹 앱입니다.
+쉬는 시간·스포츠클럽 시간에 친구와 함께, 또는 혼자서 장기를 두며 익힐 수 있도록
+만들고 있어요.
+
+> [Fairy-Stockfish](https://github.com/fairy-stockfish/Fairy-Stockfish) 엔진을 쓰는
+> 개인 프로젝트(장기 훈수 도우미)를 포크해, 교실용 학습 앱으로 발전시키는 중입니다.
+> 장기판·규칙·엔진 부분(`board.js` / `engine.js` / `vendor/`)은 그대로 재사용합니다.
 
 ## 실행
 
@@ -9,50 +14,46 @@
 python3 server.py
 ```
 
-그다음 브라우저에서 **http://localhost:8777** 접속.
+브라우저에서 **http://localhost:8777** 접속. (포트 변경: `PORT=9000 python3 server.py`)
 
-> 멀티스레드 WASM(SharedArrayBuffer) 때문에 `file://` 로 직접 열면 안 되고, 반드시 이 서버를 통해 열어야 합니다. (서버가 COOP/COEP 헤더를 붙여 줍니다.)
-> 포트를 바꾸려면 `PORT=9000 python3 server.py`.
+> 멀티스레드 WASM(SharedArrayBuffer)에 필요한 COOP/COEP 헤더를 서버가 붙여 주기 때문에,
+> `file://` 로 직접 열지 말고 반드시 이 서버로 여세요.
 
-## 사용법
+## 화면 구성
 
-1. 실제 대국과 똑같이 판 위 돌을 클릭해서 옮깁니다. (돌 클릭 → 갈 곳 클릭)
-2. 분석해 줄 차례가 되면 **파란 화살표**로 추천수가 표시되고, 우측에 기물·평가·예상 진행이 나옵니다.
-3. **위치 편집**: 중간부터 시작하거나 차림(마/상 배치)이 다를 때, 팔레트에서 기물을 골라 현재 판 그대로 맞춘 뒤 "이 위치로 시작".
+| 화면 | 파일 | 상태 |
+|------|------|------|
+| **홈** (모드 선택) | `public/index.html` | ✅ |
+| **둘이서 대국** (한 화면에서 번갈아 두기) | `public/together.html` · `together.js` | ✅ |
+| AI와 대국 (급수 도전) | — | ⏳ 예정 |
+| 배우기 (미니게임 커리큘럼) | — | ⏳ 예정 |
+| 온라인 대전 | — | ⏳ 예정 |
+| 우리 반 대회 (대진표) | — | ⏳ 예정 |
+| 훈수 도우미 (선생님용 분석 도구) | `public/advisor.html` · `main.js` | ✅ (원본 보존) |
 
-### 옵션
-- **추천해 줄 편**: 漢(아래) / 楚(위) / 양쪽 다
-- **분석 강도**: 입문 → 급수 → 1단 → 유단 최강 (Skill Level + 생각 시간 조절)
-- 한 수 무르기 · 판 뒤집기 · 처음 위치로
-
-## 구성
+## 공통 모듈 (원본 그대로 재사용)
 
 | 파일 | 역할 |
 |------|------|
-| `server.py` | COOP/COEP 헤더를 붙여 `public/` 를 서빙하는 로컬 서버 |
-| `public/index.html` · `style.css` | 화면 |
-| `public/board.js` | 장기판 모델·SVG 렌더링·클릭 이동 (ffish 사용) |
-| `public/engine.js` | Fairy-Stockfish UCI 래퍼 |
-| `public/main.js` | 전체 연결(분석·UI) |
-| `public/vendor/` | ffish.js / Fairy-Stockfish(wasm) 엔진 파일 |
+| `server.py` | COOP/COEP 헤더로 `public/` 서빙 |
+| `public/board.js` | 장기판 모델·SVG 렌더링·클릭 이동·규칙 (ffish 사용) |
+| `public/engine.js` | Fairy-Stockfish UCI 래퍼 (AI·분석용) |
+| `public/variant.js` | 장기 변종 설정 |
+| `public/vendor/` | ffish.js / Fairy-Stockfish(wasm) |
+| `public/style.css` | 공통·훈수 도우미 스타일 |
+| `public/classroom.css` | 교실 화면(홈·둘이서 대국) 전용 스타일 |
 
-## 배포 (Vercel)
+## 둘이서 대국
 
-배포 주소: **https://public-steel-alpha-12.vercel.app**
+- 두 학생이 **한 기기에서 번갈아** 판 위 돌을 눌러 둡니다. (엔진 없이 동작 → 가볍고 빠름)
+- 큰 **차례 표시줄**, 각 편이 **잡은 말과 점수**(차13·포7·마5·상3·사3·병졸2) 표시
+- **무르기 · 한 수 쉼 · 판 돌리기 · 다시 시작** 버튼
+- 외통(장군 몰이)이 되면 **승리 축하 화면**
 
-`public/` 폴더를 사이트 루트로 배포합니다. SharedArrayBuffer(멀티스레드 WASM)에 필요한
-COOP/COEP 헤더는 [public/vercel.json](public/vercel.json)에서 설정합니다.
+## 로드맵
 
-재배포:
-
-```bash
-cd public
-vercel deploy --prod --yes
-```
-
-> 프로젝트 이름은 폴더명 때문에 `public` 으로 잡혀 있습니다. 바꾸고 싶으면 Vercel 대시보드에서 프로젝트 이름/도메인을 변경하면 됩니다.
-
-## 강도 더 올리기 / 내리기
-
-`public/main.js` 상단 `STRENGTH` 의 `skill`(0~20)과 `movetime`(ms)를 조절하세요.
-숫자를 키울수록 강하고 느려집니다.
+1. ✅ **둘이서 대국** — 학생끼리 대면 대국
+2. **AI와 대국 + 급수** — 컴퓨터와 두며 자기 급수 올리기 (엔진 강도 조절 활용)
+3. **배우기** — 기물 움직임·기초 전술을 미니게임으로 단계 학습
+4. **온라인 대전** — 실시간 멀티플레이 (서버 필요)
+5. **우리 반 대회** — 대진표·기록 관리

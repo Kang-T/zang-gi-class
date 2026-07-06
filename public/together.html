@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>둘이서 대국 · 장기교실</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="classroom.css" />
+</head>
+<body>
+  <div class="cls-app">
+    <div class="cls-topbar">
+      <a class="topbar-back" href="index.html">← 홈</a>
+      <div class="topbar-title">둘이서 대국</div>
+      <div class="topbar-right"></div>
+    </div>
+
+    <!-- 대국 시작 설정 -->
+    <div id="setup" class="cls-setup">
+      <div class="setup-card">
+        <h2>대국을 시작해요</h2>
+        <p class="setup-hint">두 사람이 번갈아 판 위의 돌을 눌러 옮깁니다.</p>
+
+        <div class="name-row">
+          <label class="name-field han">
+            <span class="name-flag">漢 빨간편</span>
+            <input id="name-han" type="text" maxlength="6" placeholder="이름 (예: 민준)" />
+          </label>
+          <span class="vs">vs</span>
+          <label class="name-field cho">
+            <span class="name-flag">楚 파란편</span>
+            <input id="name-cho" type="text" maxlength="6" placeholder="이름 (예: 서연)" />
+          </label>
+        </div>
+
+        <details class="setup-adv">
+          <summary>차림 바꾸기 (마·상 배치)</summary>
+          <div class="setup-selects">
+            <label>楚 초 차림
+              <select id="cho-setup">
+                <option value="마상상마" selected>마상상마 (귀마)</option>
+                <option value="상마마상">상마마상 (면상)</option>
+                <option value="마상마상">마상마상</option>
+                <option value="상마상마">상마상마</option>
+              </select>
+            </label>
+            <label>漢 한 차림
+              <select id="han-setup">
+                <option value="마상상마" selected>마상상마 (귀마)</option>
+                <option value="상마마상">상마마상 (면상)</option>
+                <option value="마상마상">마상마상</option>
+                <option value="상마상마">상마상마</option>
+              </select>
+            </label>
+          </div>
+        </details>
+
+        <button id="start-btn" class="cls-btn big" disabled>불러오는 중…</button>
+      </div>
+    </div>
+
+    <!-- 대국 화면 -->
+    <div id="game" class="cls-game hidden">
+      <!-- 위쪽 플레이어(기본: 漢) -->
+      <div class="pinfo" id="pinfo-top">
+        <div class="pinfo-name"></div>
+        <div class="pinfo-captured"></div>
+        <div class="pinfo-score">0</div>
+      </div>
+
+      <div id="turn-banner" class="turn-banner">—</div>
+
+      <div class="board-wrap">
+        <svg id="board" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div id="check-fx"></div>
+        <div id="toast"></div>
+      </div>
+
+      <!-- 아래쪽 플레이어(기본: 楚) -->
+      <div class="pinfo" id="pinfo-bottom">
+        <div class="pinfo-name"></div>
+        <div class="pinfo-captured"></div>
+        <div class="pinfo-score">0</div>
+      </div>
+
+      <div class="cls-controls">
+        <button id="undo-btn" class="cls-btn">↩ 무르기</button>
+        <button id="pass-btn" class="cls-btn">한 수 쉼</button>
+        <button id="flip-btn" class="cls-btn">↕ 판 돌리기</button>
+        <button id="restart-btn" class="cls-btn">🔄 다시</button>
+      </div>
+    </div>
+
+    <!-- 승리 축하 오버레이 -->
+    <div id="win-overlay" class="win-overlay hidden">
+      <div class="win-box">
+        <div class="win-emoji">🎉</div>
+        <div id="win-title" class="win-title">승리!</div>
+        <div id="win-sub" class="win-sub"></div>
+        <div class="win-actions">
+          <button id="win-again" class="cls-btn big">🔄 다시 하기</button>
+          <a href="index.html" class="cls-btn ghost">홈으로</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="together.js"></script>
+</body>
+</html>

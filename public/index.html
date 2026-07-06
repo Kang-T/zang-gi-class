@@ -3,256 +3,63 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>장기 훈수 도우미</title>
-  <!-- 엔진(UMD)을 먼저 로드해 window.Stockfish 전역 생성 -->
-  <script src="/vendor/stockfish.js"></script>
+  <title>장기교실</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="classroom.css" />
 </head>
 <body>
-  <!-- 랜딩(시작) 화면 -->
-  <div id="landing" class="landing">
-    <div class="landing-inner">
-      <div class="landing-logo"><span class="lg-cho">楚</span><span class="lg-han">漢</span></div>
-      <h1>장기 훈수 도우미</h1>
-      <p class="landing-desc">
-        대국을 두면 <b>다음 추천수·승률·예상 수순</b>을 알려주고,<br />
-        끝난 뒤엔 <b>복기·대국 공부</b>로 약점까지 짚어드려요.
-      </p>
-      <button id="landing-start" class="primary big">대국 시작하기</button>
-      <button id="landing-continue" class="continue-btn hidden">이어서 하기</button>
-      <div class="landing-status">엔진 <span id="landing-status">불러오는 중…</span></div>
-    </div>
-  </div>
-
-  <!-- 대국 설정 모달 -->
-  <div id="setup-modal" class="modal hidden">
-    <div class="modal-backdrop" id="modal-backdrop"></div>
-    <div class="modal-box">
-      <button id="modal-close" class="modal-x" aria-label="닫기">✕</button>
-      <h2 class="modal-title">대국 시작</h2>
-
-      <div class="setup-block">
-        <div class="card-title">새 대국 (사람과 둘 때 훈수)</div>
-        <div class="field">
-          <label>내 진영</label>
-          <select id="myside-setup">
-            <option value="w" selected>楚 초 (파랑·선수)</option>
-            <option value="b">漢 한 (빨강·후수)</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>초(楚) 차림</label>
-          <select id="cho-setup">
-            <option value="마상상마" selected>마상상마 (귀마)</option>
-            <option value="상마마상">상마마상 (면상)</option>
-            <option value="마상마상">마상마상</option>
-            <option value="상마상마">상마상마</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>한(漢) 차림</label>
-          <select id="han-setup">
-            <option value="마상상마" selected>마상상마 (귀마)</option>
-            <option value="상마마상">상마마상 (면상)</option>
-            <option value="마상마상">마상마상</option>
-            <option value="상마상마">상마상마</option>
-          </select>
-        </div>
-        <button id="newgame-btn" class="primary" style="width:100%">이 차림으로 새 대국</button>
-      </div>
-
-      <div class="modal-or"><span>또는</span></div>
-
-      <div class="setup-block">
-        <div class="card-title">엔진과 연습 대국</div>
-        <div class="field">
-          <label>내 진영</label>
-          <select id="prac-side">
-            <option value="w" selected>楚 초 (선수)</option>
-            <option value="b">漢 한 (후수)</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>상대(엔진) 실력</label>
-          <select id="prac-level">
-            <option value="easy">약 (입문)</option>
-            <option value="mid" selected>중 (급수)</option>
-            <option value="hard">강 (1단급)</option>
-            <option value="max">최강</option>
-          </select>
-        </div>
-        <label class="chk"><input type="checkbox" id="prac-hints" /> 내 차례에도 추천 보기</label>
-        <button id="prac-start" class="primary" style="width:100%;margin-top:10px">연습 시작</button>
-      </div>
-
-      <div class="modal-or"><span>저장된 대국</span></div>
-      <div id="saved-list" class="saved-list"></div>
-    </div>
-  </div>
-
-  <!-- 메인 앱 -->
-  <div class="app">
-    <header>
-      <h1>장기 훈수 도우미</h1>
-      <div class="status">엔진: <span id="engine-status">대기</span></div>
+  <div class="home">
+    <header class="home-head">
+      <div class="home-logo"><span class="lg-cho">楚</span><span class="lg-han">漢</span></div>
+      <h1 class="home-title">장기교실</h1>
+      <p class="home-sub">친구랑 두고, 배우고, 대회까지 — 우리 반 장기 놀이터</p>
     </header>
 
-    <div class="layout">
-      <div class="board-wrap">
-        <svg id="board" xmlns="http://www.w3.org/2000/svg"></svg>
-        <div id="turn-ind" class="turn">—</div>
-        <div id="check-fx"></div>
-        <div id="toast"></div>
-        <button id="play-best-btn" class="primary playbest" disabled>추천대로 두기 ▶</button>
-      </div>
+    <div class="mode-grid">
+      <a class="mode-card" href="together.html">
+        <div class="mode-icon">🤝</div>
+        <div class="mode-name">둘이서 대국</div>
+        <div class="mode-desc">한 화면에서 친구랑 번갈아 두기</div>
+        <div class="mode-go">시작하기 →</div>
+      </a>
 
-      <aside class="panel">
-        <div class="card suggest">
-          <div class="card-title">예상 승률</div>
-          <div class="winbar">
-            <div id="win-cho" class="win-cho" style="width:50%"></div>
-            <div id="win-han" class="win-han" style="width:50%"></div>
-          </div>
-          <div id="win-text" class="win-text">…</div>
-          <div id="suggest-title" class="card-title" style="margin-top:10px">다음 추천수</div>
-          <div id="suggest-move" class="suggest-move">—</div>
-          <div id="suggest-detail" class="suggest-detail"></div>
-          <div id="reply" class="reply"></div>
-          <div id="pv" class="pv"></div>
-        </div>
+      <button class="mode-card soon" type="button" disabled>
+        <div class="mode-icon">🤖</div>
+        <div class="mode-name">AI와 대국</div>
+        <div class="mode-desc">컴퓨터랑 두며 급수 올리기</div>
+        <div class="mode-badge">곧 만나요</div>
+      </button>
 
-        <div id="play-panel">
-          <!-- 연습 중 배너 -->
-          <div id="prac-banner" class="prac-banner hidden">
-            <span class="prac-status">엔진과 연습 중</span>
-            <button id="prac-stop">연습 종료</button>
-          </div>
+      <button class="mode-card soon" type="button" disabled>
+        <div class="mode-icon">🎓</div>
+        <div class="mode-name">배우기</div>
+        <div class="mode-desc">미니게임으로 장기 규칙 익히기</div>
+        <div class="mode-badge">곧 만나요</div>
+      </button>
 
-          <div class="row">
-            <button id="analyze-btn" class="primary">지금 분석</button>
-            <label class="chk"><input type="checkbox" id="auto" checked /> 자동 추천</label>
-          </div>
-          <div class="row">
-            <label class="chk"><input type="checkbox" id="opp-analyze" checked /> 상대 차례도 분석(상대 예상 수)</label>
-          </div>
+      <button class="mode-card soon" type="button" disabled>
+        <div class="mode-icon">🌐</div>
+        <div class="mode-name">온라인 대전</div>
+        <div class="mode-desc">멀리 있는 친구랑 실시간 대국</div>
+        <div class="mode-badge">곧 만나요</div>
+      </button>
 
-          <!-- 자주 쓰는 게임 버튼 (위로 정리) -->
-          <div class="row btns">
-            <button id="pass-btn">한수쉼</button>
-            <button id="undo-btn">무르기</button>
-            <button id="flip-btn">판 뒤집기</button>
-          </div>
-          <div class="row btns">
-            <button id="review-btn">복기</button>
-            <button id="study-btn">대국 공부</button>
-            <button id="save-btn">대국 저장</button>
-          </div>
-          <div class="row btns">
-            <button id="edit-btn">위치 편집</button>
-            <button id="reset-btn">처음 위치로</button>
-          </div>
-          <div class="row btns">
-            <button id="newgame-open" class="primary">＋ 새 대국 / 설정</button>
-          </div>
+      <button class="mode-card soon" type="button" disabled>
+        <div class="mode-icon">🏆</div>
+        <div class="mode-name">우리 반 대회</div>
+        <div class="mode-desc">대진표 짜고 우승자 가리기</div>
+        <div class="mode-badge">곧 만나요</div>
+      </button>
 
-          <!-- 옵션(가끔 씀) 접어두기 -->
-          <details class="opts">
-            <summary>분석 옵션 (추천 대상 · 강도 · 표시)</summary>
-            <div class="field">
-              <label>내 진영 (승률·추천 기준)</label>
-              <select id="myside">
-                <option value="w" selected>楚 초</option>
-                <option value="b">漢 한</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>분석 강도 (오래 볼수록 강함)</label>
-              <select id="strength">
-                <option value="fast">빠름 (0.8초)</option>
-                <option value="normal">보통 (1.8초)</option>
-                <option value="precise" selected>정밀 (3.5초)</option>
-                <option value="max">최강 (7초)</option>
-              </select>
-            </div>
-            <label class="chk"><input type="checkbox" id="showline" checked /> 예상 수순 화살표(여러 수 앞)</label><br />
-            <label class="chk"><input type="checkbox" id="anim" checked /> 기물 이동 애니메이션</label>
-          </details>
-
-          <div class="help">
-            ① 실제 대국과 똑같이 판 위 돌을 클릭해 옮기세요.<br />
-            ② 내 차례엔 <b>화살표</b>로 추천수가 표시됩니다.<br />
-            ③ 중간부터면 <b>위치 편집</b>으로 현재 판을 맞추세요.
-          </div>
-        </div>
-
-        <div id="review-panel" class="hidden">
-          <div class="card-title">복기 / 대국 공부</div>
-          <div id="study-progress" class="study-progress hidden">
-            분석 중 <span id="sp-cur">0</span> / <span id="sp-tot">0</span>
-            <div class="spbar"><div id="sp-bar"></div></div>
-          </div>
-          <div id="review-info" class="review-info">0 / 0 수</div>
-          <div id="study-badge" class="study-badge hidden"></div>
-          <div id="review-last" class="review-last">시작 위치</div>
-          <div class="row btns">
-            <button id="rv-first">⏮ 처음</button>
-            <button id="rv-prev">◀ 이전</button>
-            <button id="rv-next">다음 ▶</button>
-            <button id="rv-last">끝 ⏭</button>
-          </div>
-          <div id="study-controls" class="hidden">
-            <div class="row btns">
-              <button id="study-auto">▶ 자동 재생</button>
-              <button id="study-keypoint">핵심 포인트 ▶▶</button>
-            </div>
-            <div id="keypoints" class="keypoints"></div>
-          </div>
-          <div class="row btns">
-            <button id="review-exit" class="primary">복기 종료</button>
-          </div>
-        </div>
-
-        <div id="edit-panel" class="hidden">
-          <div class="card-title">위치 편집</div>
-          <div class="pal-group">
-            <div class="pal-label">楚 초 (파랑)</div>
-            <div class="palette">
-              <button class="pal cho" data-p="K">楚</button>
-              <button class="pal cho" data-p="R">車</button>
-              <button class="pal cho" data-p="N">馬</button>
-              <button class="pal cho" data-p="B">象</button>
-              <button class="pal cho" data-p="A">士</button>
-              <button class="pal cho" data-p="C">包</button>
-              <button class="pal cho" data-p="P">卒</button>
-            </div>
-            <div class="pal-label">漢 한 (빨강)</div>
-            <div class="palette">
-              <button class="pal han" data-p="k">漢</button>
-              <button class="pal han" data-p="r">車</button>
-              <button class="pal han" data-p="n">馬</button>
-              <button class="pal han" data-p="b">象</button>
-              <button class="pal han" data-p="a">士</button>
-              <button class="pal han" data-p="c">包</button>
-              <button class="pal han" data-p="p">兵</button>
-            </div>
-            <div class="palette">
-              <button class="pal erase active" data-p="x">지우기</button>
-            </div>
-          </div>
-          <div class="field">
-            <label>둘 차례</label>
-            <label class="chk"><input type="radio" name="edit-turn" value="w" checked /> 楚 초</label>
-            <label class="chk"><input type="radio" name="edit-turn" value="b" /> 漢 한</label>
-          </div>
-          <div class="row btns">
-            <button id="apply-edit" class="primary">이 위치로 시작</button>
-            <button id="cancel-edit">취소</button>
-          </div>
-        </div>
-      </aside>
+      <a class="mode-card tool" href="advisor.html">
+        <div class="mode-icon">🔎</div>
+        <div class="mode-name">훈수 도우미</div>
+        <div class="mode-desc">선생님용 · 추천수·복기 분석</div>
+        <div class="mode-go">열기 →</div>
+      </a>
     </div>
-  </div>
 
-  <script type="module" src="main.js"></script>
+    <footer class="home-foot">장기교실 · 초등학교 교실용 장기 학습 앱</footer>
+  </div>
 </body>
 </html>
