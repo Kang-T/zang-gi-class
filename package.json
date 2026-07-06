@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "fairy-stockfish-nnue.wasm": "^1.1.11",
+    "ffish": "^0.7.9",
+    "ffish-es6": "^0.7.9"
+  }
+}
