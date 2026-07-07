@@ -339,6 +339,71 @@ body { background: var(--bg); color: var(--text); }
 }
 .lesson-controls .cls-btn { flex: 1; min-width: 92px; padding: 12px 8px; }
 
+/* ===== 배우기: 학습 지도 (커리큘럼) ===== */
+.lesson-view { display: flex; flex-direction: column; align-items: center; }
+.unit {
+  background: var(--surface); border: 1px solid var(--line); border-left-width: 5px;
+  border-radius: var(--r-lg); padding: 14px 16px; margin-bottom: 14px; box-shadow: var(--shadow-sm);
+}
+.unit.c-orange { border-left-color: var(--orange); }
+.unit.c-purple { border-left-color: var(--purple); }
+.unit.c-blue { border-left-color: var(--blue); }
+.unit.locked { opacity: .6; border-left-color: var(--line-strong); }
+.unit-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.unit-icon { font-size: 24px; line-height: 1; }
+.unit-title { font-size: 18px; font-weight: 800; flex: 1; }
+.unit-badge { font-size: 13px; font-weight: 800; color: var(--green); }
+.unit-soon { font-size: 12px; color: var(--muted); background: var(--surface-2); padding: 4px 9px; border-radius: 999px; }
+.lnodes { display: flex; flex-direction: column; gap: 8px; }
+.lnode {
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+  background: var(--bg-tint); border: 1px solid var(--line); border-radius: var(--r-md);
+  padding: 10px 12px; cursor: pointer; font-family: inherit; color: var(--text);
+  transition: background .12s, border-color .12s;
+}
+.lnode:hover { background: var(--surface-2); border-color: var(--muted); }
+.lnode.done { background: var(--green-soft); border-color: var(--green); }
+.lnode-check {
+  width: 22px; height: 22px; border-radius: 999px; border: 2px solid var(--line-strong);
+  display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--green);
+  flex: 0 0 auto; font-size: 13px;
+}
+.lnode.done .lnode-check { background: var(--green); color: #fff; border-color: var(--green); }
+.lnode-body { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.lnode-title { font-weight: 800; font-size: 15.5px; }
+.lnode-tag { font-size: 12px; color: var(--text-soft); }
+
+/* 이야기 화면 */
+.story-art {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
+  padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow-sm);
+  width: min(360px, 100%); display: flex; justify-content: center;
+}
+.art-svg { width: 100%; max-width: 320px; height: auto; display: block; }
+.story-title { font-size: 22px; font-weight: 900; text-align: center; margin-bottom: 8px; }
+.story-text { font-size: 15.5px; line-height: 1.75; text-align: center; max-width: 460px; color: var(--text); margin-bottom: 14px; }
+.story-text b { color: var(--blue); }
+.story-dots { display: flex; gap: 7px; justify-content: center; margin-bottom: 12px; }
+.story-dots .dot { width: 8px; height: 8px; border-radius: 999px; background: var(--line-strong); }
+.story-dots .dot.on { background: var(--blue); }
+
+/* 퀴즈 화면 */
+.quiz-progress { color: var(--muted); font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+.quiz-q { font-size: 18.5px; font-weight: 800; text-align: center; max-width: 460px; margin-bottom: 14px; }
+.quiz-options { display: flex; flex-direction: column; gap: 10px; width: min(380px, 100%); margin-bottom: 12px; }
+.quiz-opt {
+  font-family: inherit; font-size: 16px; font-weight: 700; padding: 13px 14px;
+  border-radius: var(--r-md); border: 2px solid var(--line-strong); background: var(--surface);
+  color: var(--text); cursor: pointer; transition: background .12s, border-color .12s;
+}
+.quiz-opt:hover:not(:disabled) { background: var(--surface-2); border-color: var(--blue); }
+.quiz-opt.correct { background: var(--green-soft); border-color: var(--green); color: var(--green); }
+.quiz-opt.wrong { background: var(--red-soft); border-color: var(--red); color: var(--red); }
+.quiz-opt:disabled { cursor: default; }
+.quiz-feedback { min-height: 1.4em; font-size: 14.5px; font-weight: 700; text-align: center; margin-bottom: 8px; }
+.quiz-feedback.ok { color: var(--green); }
+.quiz-feedback.no { color: var(--red); }
+
 /* ===== 온라인 대전 ===== */
 .cfg-warn {
   background: var(--red-soft); border: 1px solid var(--red); color: #a3271b;

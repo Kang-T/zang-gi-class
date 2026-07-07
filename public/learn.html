@@ -15,46 +15,68 @@
       <div class="topbar-right"></div>
     </div>
 
-    <!-- 커리큘럼(기물 목록) -->
-    <div id="curriculum">
-      <p class="learn-intro">기물 하나를 골라, <b>상대 병(兵)을 잡아 보며</b> 움직임을 익혀요.</p>
-      <div id="learn-grid" class="learn-grid"></div>
+    <!-- 학습 지도 (커리큘럼) -->
+    <div id="path">
+      <p class="learn-intro">장기를 처음부터 차근차근 배워요. 위에서부터 하나씩 따라와요!</p>
+      <div id="path-list"></div>
     </div>
 
-    <!-- 레슨 화면 -->
-    <div id="lesson" class="cls-game hidden">
+    <!-- 이야기 화면 -->
+    <div id="story-view" class="hidden lesson-view">
+      <div class="story-art" id="story-art"></div>
+      <div class="story-title" id="story-title"></div>
+      <div class="story-text" id="story-text"></div>
+      <div class="story-dots" id="story-dots"></div>
+      <div class="lesson-controls">
+        <button id="story-prev" class="cls-btn">← 이전</button>
+        <button id="story-list" class="cls-btn">☰ 목록</button>
+        <button id="story-next" class="cls-btn big">다음 →</button>
+      </div>
+    </div>
+
+    <!-- 퀴즈 화면 -->
+    <div id="quiz-view" class="hidden lesson-view">
+      <div class="quiz-progress" id="quiz-progress"></div>
+      <div class="story-art" id="quiz-art"></div>
+      <div class="quiz-q" id="quiz-q"></div>
+      <div class="quiz-options" id="quiz-options"></div>
+      <div class="quiz-feedback" id="quiz-feedback"></div>
+      <div class="lesson-controls">
+        <button id="quiz-list" class="cls-btn">☰ 목록</button>
+        <button id="quiz-next" class="cls-btn big" disabled>다음 →</button>
+      </div>
+    </div>
+
+    <!-- 판 미니게임 화면 -->
+    <div id="puzzle-view" class="hidden lesson-view">
       <div class="lesson-head">
         <span id="lesson-glyph" class="lesson-glyph">車</span>
         <div id="lesson-name" class="lesson-name">차</div>
         <div id="lesson-desc" class="lesson-desc"></div>
       </div>
-
       <div id="task-banner" class="task-banner">—</div>
-
       <div class="board-wrap">
         <svg id="board" xmlns="http://www.w3.org/2000/svg"></svg>
         <div id="check-fx"></div>
         <div id="toast"></div>
       </div>
-
       <div class="lesson-controls">
         <button id="reset-btn" class="cls-btn">↺ 다시 놓기</button>
         <button id="hint-btn" class="cls-btn">💡 힌트</button>
-        <button id="next-btn" class="cls-btn hidden">다음 기물 →</button>
-        <button id="list-btn" class="cls-btn">☰ 목록</button>
+        <button id="puzzle-next" class="cls-btn big hidden">다음 →</button>
+        <button id="puzzle-list" class="cls-btn">☰ 목록</button>
       </div>
     </div>
 
-    <!-- 전체 완료 축하 -->
-    <div id="done-overlay" class="win-overlay hidden">
+    <!-- 단원 배지 / 축하 오버레이 -->
+    <div id="badge-overlay" class="win-overlay hidden">
       <div class="win-box">
-        <div class="win-emoji">🎓</div>
-        <div class="win-title cho">장기 기물 박사!</div>
-        <div class="win-sub">일곱 기물을 모두 배웠어요. 이제 실전으로 가볼까요?</div>
+        <div id="badge-emoji" class="win-emoji">🏅</div>
+        <div id="badge-title" class="win-title cho">단원 완료!</div>
+        <div id="badge-sub" class="win-sub"></div>
         <div class="win-actions">
-          <a href="vs-ai.html" class="cls-btn big">🤖 AI와 대국하러 가기</a>
-          <button id="done-again" class="cls-btn ghost" type="button">다시 복습하기</button>
-          <a href="index.html" class="cls-btn ghost">홈으로</a>
+          <button id="badge-next" class="cls-btn big">다음 단원 →</button>
+          <button id="badge-close" class="cls-btn ghost" type="button">학습 지도로</button>
         </div>
       </div>
     </div>
