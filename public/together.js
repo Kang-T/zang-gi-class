@@ -25,6 +25,10 @@ async function boot() {
 
   $("start-btn").disabled = false;
   $("start-btn").textContent = "대국 시작 ▶";
+  // 우리 반 대회에서 넘어온 경우 두 사람 이름 미리 채우기 (?cho=&han=)
+  const q = new URLSearchParams(location.search);
+  if (q.get("cho")) $("name-cho").value = q.get("cho").slice(0, 6);
+  if (q.get("han")) $("name-han").value = q.get("han").slice(0, 6);
   bindUI();
 }
 

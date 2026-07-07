@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>우리 반 대회 · 장기교실</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="classroom.css" />
+</head>
+<body>
+  <div class="cls-app wide">
+    <div class="cls-topbar">
+      <a class="topbar-back" href="index.html">← 홈</a>
+      <div class="topbar-title">우리 반 대회</div>
+      <div class="topbar-right"></div>
+    </div>
+
+    <!-- 참가자 입력 -->
+    <div id="setup" class="cls-setup">
+      <div class="setup-card">
+        <h2>대회를 열어요 🏆</h2>
+        <p class="setup-hint">참가자를 넣고 추첨하면 대진표가 만들어져요.</p>
+
+        <label class="online-field">
+          <span class="online-label">대회 이름</span>
+          <input id="t-name" type="text" maxlength="20" placeholder="예: 5학년 1반 장기왕" />
+        </label>
+
+        <label class="online-field">
+          <span class="online-label">참가자 (한 줄에 한 명)</span>
+          <textarea id="t-players" class="players-area" rows="8" placeholder="민준&#10;서연&#10;도윤&#10;하은&#10;…"></textarea>
+        </label>
+        <div class="t-count"><span id="t-count">0</span>명 참가</div>
+
+        <button id="make-btn" class="cls-btn big">🎲 추첨해서 대진표 만들기</button>
+        <div id="setup-msg" class="conn-status"></div>
+      </div>
+    </div>
+
+    <!-- 대진표 -->
+    <div id="bracket-view" class="hidden">
+      <div class="brk-head">
+        <div>
+          <div id="brk-title" class="brk-title">우리 반 장기 대회</div>
+          <div id="brk-sub" class="brk-sub"></div>
+        </div>
+        <div class="brk-actions">
+          <button id="redraw-btn" class="cls-btn">🎲 다시 추첨</button>
+          <button id="clear-btn" class="cls-btn">결과 지우기</button>
+          <button id="new-btn" class="cls-btn">＋ 새 대회</button>
+        </div>
+      </div>
+
+      <div id="champ" class="champ hidden"></div>
+
+      <div class="brk-wrap">
+        <div id="bracket" class="bracket"></div>
+      </div>
+      <p class="brk-hint">이긴 사람을 눌러 다음 판으로 올려요. 다시 누르면 바꿀 수 있어요.</p>
+    </div>
+  </div>
+
+  <script type="module" src="tourney.js"></script>
+</body>
+</html>
