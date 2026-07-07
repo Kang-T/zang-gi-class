@@ -13,10 +13,10 @@ const GLYPH = {
 };
 const NAME = { R: "차", N: "마", B: "상", A: "사", C: "포", P: "졸", K: "장" };
 
-// 기물 종류별 크기(반지름, 글자크기) — 장은 크게, 졸은 작게
+// 기물 종류별 크기 [반지름, 글자크기] — 장은 크게, 졸은 작게 (전통 장기알 비율)
 const PSIZE = {
-  K: [30, 32], R: [26, 27], C: [26, 27], N: [24, 25],
-  B: [24, 25], A: [23, 24], P: [19, 19],
+  K: [30, 30], R: [27, 27], C: [25, 25], N: [23, 23],
+  B: [23, 23], A: [21, 21], P: [19, 18],
 };
 
 // 차림(마/상 배치) — 뒷줄 안쪽 4칸 [b, c, g, h]
@@ -569,16 +569,33 @@ export class JanggiBoard {
     this._line(x1, y1, x2, y2, "grid");
   }
 
+  // 팔각형 꼭짓점(중심 x,y, 반지름 r) — 위·아래·좌·우 변이 평평한 정팔각형
+  _octPoints(x, y, r) {
+    const c = r * 0.4142; // tan(22.5°)
+    const p = [[-c, -r], [c, -r], [r, -c], [r, c], [c, r], [-c, r], [-r, c], [-r, -c]];
+    return p.map(([dx, dy]) => `${(x + dx).toFixed(1)},${(y + dy).toFixed(1)}`).join(" ");
+  }
+
   // 기물 <g> 생성(좌표 x,y 중심). 추가는 호출자가.
+  // 전통 장기알처럼 팔각형 + 안쪽 테두리 + 아래 그림자로 그린다.
   _pieceG(letter, x, y) {
     const cho = letter === letter.toUpperCase();
-    const [r, fs] = PSIZE[letter.toUpperCase()] || [24, 25];
+    const [r, fs] = PSIZE[letter.toUpperCase()] || [23, 22];
     const mine = (cho ? "cho" : "han") === this.mySide;
     const g = document.createElementNS(NS, "g");
     g.setAttribute("class", "piece " + (cho ? "cho" : "han") + (mine ? " mine" : ""));
-    const circ = document.createElementNS(NS, "circle");
-    circ.setAttribute("cx", x); circ.setAttribute("cy", y); circ.setAttribute("r", r);
-    circ.setAttribute("class", "piece-disc");
+    // 그림자(살짝 아래로) → 판 위에 떠 보이게
+    const sh = document.createElementNS(NS, "polygon");
+    sh.setAttribute("points", this._octPoints(x, y + 2.2, r));
+    sh.setAttribute("class", "piece-shadow");
+    // 팔각형 몸통
+    const body = document.createElementNS(NS, "polygon");
+    body.setAttribute("points", this._octPoints(x, y, r));
+    body.setAttribute("class", "piece-disc");
+    // 안쪽 팔각 테두리(각인 느낌)
+    const inner = document.createElementNS(NS, "polygon");
+    inner.setAttribute("points", this._octPoints(x, y, r - 4.5));
+    inner.setAttribute("class", "piece-inner");
     const t = document.createElementNS(NS, "text");
     t.setAttribute("x", x); t.setAttribute("y", y + 1);
     t.setAttribute("text-anchor", "middle");
@@ -586,7 +603,7 @@ export class JanggiBoard {
     t.setAttribute("class", "piece-text");
     t.setAttribute("font-size", fs);
     t.textContent = GLYPH[letter] || "?";
-    g.appendChild(circ); g.appendChild(t);
+    g.appendChild(sh); g.appendChild(body); g.appendChild(inner); g.appendChild(t);
     return g;
   }
   _piece(col, rank, letter) {

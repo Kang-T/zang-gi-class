@@ -339,6 +339,44 @@ body { background: var(--bg); color: var(--text); }
 }
 .lesson-controls .cls-btn { flex: 1; min-width: 92px; padding: 12px 8px; }
 
+/* ===== 온라인 대전 ===== */
+.cfg-warn {
+  background: var(--red-soft); border: 1px solid var(--red); color: #a3271b;
+  border-radius: var(--r-md); padding: 12px 14px; font-size: 13.5px; line-height: 1.6; margin-bottom: 16px;
+}
+.cfg-warn code { background: rgba(0,0,0,.06); padding: 1px 6px; border-radius: 6px; }
+.online-field { display: block; margin-bottom: 16px; }
+.online-label { display: block; font-size: 13px; color: var(--text-soft); font-weight: 700; margin-bottom: 6px; }
+.online-field input {
+  font-family: inherit; font-size: 16px; padding: 11px 12px; width: 100%;
+  border-radius: var(--r-md); border: 2px solid var(--line-strong);
+  background: var(--bg-tint); color: var(--text);
+}
+.online-field input:focus { outline: none; border-color: var(--blue); }
+.lobby-or { text-align: center; color: var(--muted); font-size: 13px; font-weight: 700; margin: 16px 0; }
+.join-row { display: flex; gap: 8px; }
+.join-row input {
+  flex: 1; font-family: inherit; font-size: 20px; font-weight: 800; letter-spacing: 3px;
+  text-align: center; text-transform: uppercase; padding: 11px 12px;
+  border-radius: var(--r-md); border: 2px solid var(--line-strong);
+  background: var(--bg-tint); color: var(--text);
+}
+.join-row input:focus { outline: none; border-color: var(--blue); }
+.join-row .cls-btn { flex: 0 0 auto; }
+.conn-status { text-align: center; color: var(--text-soft); font-size: 13.5px; margin-top: 14px; min-height: 1.2em; }
+
+.setup-card.center { text-align: center; }
+.wait-title { font-size: 22px; font-weight: 900; margin-bottom: 18px; }
+.room-code-label { font-size: 13px; color: var(--text-soft); font-weight: 700; }
+.room-code-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 6px 0 14px; }
+.room-code {
+  font-size: 48px; font-weight: 900; letter-spacing: 8px; color: var(--blue);
+  background: var(--blue-soft); border-radius: var(--r-md); padding: 8px 18px 8px 26px;
+}
+.wait-msg { color: var(--text-soft); font-size: 14.5px; line-height: 1.6; margin-bottom: 14px; }
+.wait-spinner { font-size: 30px; margin-bottom: 18px; animation: wait-bob 1.4s ease-in-out infinite; }
+@keyframes wait-bob { 50% { transform: translateY(-6px); } }
+
 @media (max-width: 480px) {
   .home-title { font-size: 32px; }
   .turn-banner { font-size: 19px; }

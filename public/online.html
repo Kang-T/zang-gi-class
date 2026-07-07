@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>온라인 대전 · 장기교실</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="classroom.css" />
+  <!-- Supabase 라이브러리(자가호스팅) + 연결 설정 -->
+  <script src="/vendor/supabase.js"></script>
+  <script src="/supabase-config.js"></script>
+</head>
+<body>
+  <div class="cls-app">
+    <div class="cls-topbar">
+      <a class="topbar-back" href="index.html">← 홈</a>
+      <div class="topbar-title">온라인 대전</div>
+      <div class="topbar-right"></div>
+    </div>
+
+    <!-- 방 만들기 / 들어가기 -->
+    <div id="setup" class="cls-setup">
+      <div class="setup-card">
+        <h2>멀리 있는 친구랑 두기</h2>
+        <p class="setup-hint">방을 만들어 코드를 알려주거나, 받은 코드로 들어가요.</p>
+
+        <div id="cfg-warn" class="cfg-warn hidden">
+          ⚠️ 온라인 대전을 쓰려면 <code>supabase-config.js</code> 에 Supabase 주소와 anon 키를 넣어야 해요.
+        </div>
+
+        <label class="online-field">
+          <span class="online-label">내 이름</span>
+          <input id="nick" type="text" maxlength="8" placeholder="예: 서연" />
+        </label>
+
+        <button id="create-btn" class="cls-btn big">방 만들기 ▶</button>
+
+        <div class="lobby-or">— 또는 —</div>
+
+        <div class="join-row">
+          <input id="join-code" type="text" maxlength="4" placeholder="방 코드" autocomplete="off" />
+          <button id="join-btn" class="cls-btn">들어가기</button>
+        </div>
+
+        <div id="conn-status" class="conn-status"></div>
+      </div>
+    </div>
+
+    <!-- 대기 화면 -->
+    <div id="waiting" class="cls-setup hidden">
+      <div class="setup-card center">
+        <div id="wait-title" class="wait-title">방을 만들었어요!</div>
+        <div class="room-code-label">방 코드</div>
+        <div class="room-code-row">
+          <span id="room-code" class="room-code">····</span>
+          <button id="copy-btn" class="cls-btn" type="button">복사</button>
+        </div>
+        <div id="wait-msg" class="wait-msg">친구에게 이 코드를 알려주세요. 친구가 들어오면 시작해요.</div>
+        <div class="wait-spinner">⏳</div>
+        <button id="cancel-btn" class="cls-btn ghost" type="button">취소하고 나가기</button>
+      </div>
+    </div>
+
+    <!-- 대국 화면 -->
+    <div id="game" class="cls-game hidden">
+      <div class="pinfo" id="pinfo-top">
+        <div class="pinfo-name"></div>
+        <div class="pinfo-captured"></div>
+        <div class="pinfo-score">0</div>
+      </div>
+
+      <div id="turn-banner" class="turn-banner">—</div>
+
+      <div class="board-wrap">
+        <svg id="board" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div id="check-fx"></div>
+        <div id="toast"></div>
+      </div>
+
+      <div class="pinfo" id="pinfo-bottom">
+        <div class="pinfo-name"></div>
+        <div class="pinfo-captured"></div>
+        <div class="pinfo-score">0</div>
+      </div>
+
+      <div class="cls-controls">
+        <button id="flip-btn" class="cls-btn">↕ 판 돌리기</button>
+        <button id="resign-btn" class="cls-btn">🏳 항복</button>
+        <button id="leave-btn" class="cls-btn">🚪 나가기</button>
+      </div>
+    </div>
+
+    <!-- 결과 오버레이 -->
+    <div id="win-overlay" class="win-overlay hidden">
+      <div class="win-box">
+        <div id="win-emoji" class="win-emoji">🎉</div>
+        <div id="win-title" class="win-title">승리!</div>
+        <div id="win-sub" class="win-sub"></div>
+        <div class="win-actions">
+          <button id="rematch-btn" class="cls-btn big">🔄 다시 하기</button>
+          <button id="leave2-btn" class="cls-btn ghost" type="button">나가기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 상대 이탈 오버레이 -->
+    <div id="left-overlay" class="win-overlay hidden">
+      <div class="win-box">
+        <div class="win-emoji">📴</div>
+        <div class="win-title">상대가 나갔어요</div>
+        <div class="win-sub">연결이 끊겼거나 상대가 방을 나갔습니다.</div>
+        <div class="win-actions">
+          <a href="online.html" class="cls-btn big">새 방으로</a>
+          <a href="index.html" class="cls-btn ghost">홈으로</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="online.js"></script>
+</body>
+</html>
