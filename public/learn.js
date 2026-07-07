@@ -5,7 +5,7 @@ import { JanggiBoard } from "./board.js";
 const $ = (id) => document.getElementById(id);
 
 /* ==================== SVG 도해 라이브러리 ==================== */
-const CHO = "#2f6be6", HAN = "#ef5b4c", BODY = "#f7f0dc", LINE = "#6b4a23", WOOD = "#e8c887";
+const CHO = "#2f6be6", HAN = "#ef5b4c", BODY = "#f7f0dc", LINE = "#6b4a23", WOOD = "#e8c887", RED = "#e0402f";
 const G = { K: "楚", k: "漢", R: "車", r: "車", C: "包", c: "包", N: "馬", n: "馬", B: "象", b: "象", A: "士", a: "士", P: "卒", p: "兵" };
 
 // 기물별 크기 비율 (장 크게 … 졸 작게) — 실제 판과 같은 느낌으로
@@ -17,7 +17,6 @@ function octPts(cx, cy, r) {
   return [[-c, -r], [c, -r], [r, -c], [r, c], [c, r], [-c, r], [-r, c], [-r, -c]]
     .map(([dx, dy]) => `${(cx + dx).toFixed(1)},${(cy + dy).toFixed(1)}`).join(" ");
 }
-// 팔각 기물 하나
 function pc(letter, cx, cy, r) {
   const cho = letter === letter.toUpperCase();
   const col = cho ? CHO : HAN;
@@ -28,12 +27,13 @@ function pc(letter, cx, cy, r) {
 function svg(w, h, inner) {
   return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" class="art-svg">${inner}</svg>`;
 }
-// 장기판 그림 (cellsH 줄, pieces=[[col,row(0=위),letter]], palace 강조 여부)
-function boardArt(pieces = [], hi = null) {
+// 장기판 그림 (pieces=[[col,row(0=위),letter]], hi='palace', marks=[{t,...}])
+function boardArt(pieces = [], hi = null, marks = []) {
   const CW = 9, CH = 10, cell = 22, M = 16;
   const W = M * 2 + (CW - 1) * cell, H = M * 2 + (CH - 1) * cell;
   const x = (c) => M + c * cell, y = (r) => M + r * cell;
-  let s = `<rect x="0" y="0" width="${W}" height="${H}" rx="10" fill="${WOOD}"/>`;
+  let s = `<defs><marker id="bar" markerWidth="6" markerHeight="6" refX="4.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="${CHO}"/></marker></defs>`;
+  s += `<rect x="0" y="0" width="${W}" height="${H}" rx="10" fill="${WOOD}"/>`;
   if (hi === "palace") {
     s += `<rect x="${x(3)}" y="${y(0)}" width="${cell * 2}" height="${cell * 2}" fill="rgba(245,166,35,.28)"/>`;
     s += `<rect x="${x(3)}" y="${y(7)}" width="${cell * 2}" height="${cell * 2}" fill="rgba(245,166,35,.28)"/>`;
@@ -43,6 +43,16 @@ function boardArt(pieces = [], hi = null) {
   const pal = (c0, r0) => `<line x1="${x(c0)}" y1="${y(r0)}" x2="${x(c0 + 2)}" y2="${y(r0 + 2)}" stroke="${LINE}" stroke-width="1"/><line x1="${x(c0 + 2)}" y1="${y(r0)}" x2="${x(c0)}" y2="${y(r0 + 2)}" stroke="${LINE}" stroke-width="1"/>`;
   s += pal(3, 0) + pal(3, 7);
   for (const [c, r, letter] of pieces) s += pc(letter, x(c), y(r), cell * 0.5 * pratio(letter));
+  for (const mk of marks) {
+    if (mk.t === "ring") s += `<circle cx="${x(mk.at[0])}" cy="${y(mk.at[1])}" r="${cell * 0.6}" fill="none" stroke="${mk.color || RED}" stroke-width="3"/>`;
+    else if (mk.t === "x") { const cx = x(mk.at[0]), cy = y(mk.at[1]), d = cell * 0.3; s += `<line x1="${cx - d}" y1="${cy - d}" x2="${cx + d}" y2="${cy + d}" stroke="${RED}" stroke-width="3.5"/><line x1="${cx + d}" y1="${cy - d}" x2="${cx - d}" y2="${cy + d}" stroke="${RED}" stroke-width="3.5"/>`; }
+    else if (mk.t === "label") s += `<text x="${x(mk.at[0])}" y="${y(mk.at[1])}" text-anchor="middle" dominant-baseline="central" font-size="${cell}" font-weight="900" fill="${mk.color || RED}">${mk.text}</text>`;
+    else if (mk.t === "arrow") {
+      const x1 = x(mk.from[0]), y1 = y(mk.from[1]), x2 = x(mk.to[0]), y2 = y(mk.to[1]);
+      const a = Math.atan2(y2 - y1, x2 - x1), b = cell * 0.55;
+      s += `<line x1="${(x1 + Math.cos(a) * b).toFixed(1)}" y1="${(y1 + Math.sin(a) * b).toFixed(1)}" x2="${(x2 - Math.cos(a) * b).toFixed(1)}" y2="${(y2 - Math.sin(a) * b).toFixed(1)}" stroke="${CHO}" stroke-width="3.5" marker-end="url(#bar)"/>`;
+    }
+  }
   return svg(W, H, s);
 }
 const START_PIECES = [
@@ -51,21 +61,14 @@ const START_PIECES = [
   [0, 6, "P"], [2, 6, "P"], [4, 6, "P"], [6, 6, "P"], [8, 6, "P"], [1, 7, "C"], [7, 7, "C"], [4, 8, "K"],
   [0, 9, "R"], [1, 9, "N"], [2, 9, "B"], [3, 9, "A"], [5, 9, "A"], [6, 9, "B"], [7, 9, "N"], [8, 9, "R"],
 ];
-// 여러 기물을 가로로 나열 (labels: [{letter,count,name}])
 function rowArt(groups) {
-  const r = 24, gap = 14, padY = 30;
-  let x = 20; const rows = [];
-  for (const g of groups) {
-    const n = g.count || 1;
-    const cx = x + r;
-    rows.push({ cx, g });
-    x += r * 2 + gap;
-  }
-  const W = x + 6, H = r * 2 + padY + 26;
+  const r = 24, gap = 14; let x = 20; const rows = [];
+  for (const g of groups) { rows.push({ cx: x + r, g }); x += r * 2 + gap; }
+  const W = x + 6, H = r * 2 + 56;
   let s = "";
   for (const { cx, g } of rows) {
     s += pc(g.letter, cx, r + 12, r * pratio(g.letter));
-    s += `<text x="${cx}" y="${r * 2 + padY + 8}" text-anchor="middle" font-size="15" font-weight="800" fill="#2e2c3a">${g.name}${g.count ? " ×" + g.count : ""}</text>`;
+    s += `<text x="${cx}" y="${r * 2 + 38}" text-anchor="middle" font-size="15" font-weight="800" fill="#2e2c3a">${g.name}${g.count ? " ×" + g.count : ""}</text>`;
   }
   return svg(W, H, s);
 }
@@ -85,7 +88,7 @@ const ART = {
     + `<rect x="158" y="24" width="104" height="104" rx="14" fill="${HAN}" opacity="0.14"/>`
     + pc("K", 70, 74, 34) + pc("k", 210, 74, 34)
     + `<text x="140" y="82" text-anchor="middle" font-size="22" font-weight="900" fill="#9a94a6">VS</text>`),
-  "korea": () => boardArt([[4, 0, "k"], [4, 9, "K"], [2, 9, "C"], [6, 0, "c"]]) ,
+  "korea": () => boardArt([[4, 0, "k"], [4, 9, "K"], [2, 9, "C"], [6, 0, "c"]]),
   "army": () => rowArt([
     { letter: "K", name: "장", count: 1 }, { letter: "A", name: "사", count: 2 },
     { letter: "R", name: "차", count: 2 }, { letter: "C", name: "포", count: 2 },
@@ -112,11 +115,23 @@ const ART = {
     }
     return svg(x + 6, r * 2 + 58, s);
   },
+  // 규칙/전술 도해
+  "capture": () => boardArt([[4, 6, "R"], [4, 3, "p"]], null, [{ t: "arrow", from: [4, 6], to: [4, 3] }]),
+  "free-piece": () => boardArt([[4, 6, "R"], [4, 3, "n"]], null, [{ t: "arrow", from: [4, 6], to: [4, 3] }]),
+  "check": () => boardArt([[4, 1, "k"], [4, 7, "R"]], null, [{ t: "arrow", from: [4, 7], to: [4, 1] }, { t: "ring", at: [4, 1] }]),
+  "checkmate": () => boardArt([[3, 0, "k"], [3, 6, "R"], [4, 6, "R"]], null,
+    [{ t: "ring", at: [3, 0] }, { t: "x", at: [3, 1] }, { t: "x", at: [4, 0] }, { t: "x", at: [4, 1] }]),
+  "fork": () => boardArt([[4, 5, "N"], [2, 4, "r"], [6, 4, "c"]], null,
+    [{ t: "arrow", from: [4, 5], to: [2, 4] }, { t: "arrow", from: [4, 5], to: [6, 4] }]),
+  "bikjang": () => boardArt([[4, 0, "k"], [4, 9, "K"]], null,
+    [{ t: "label", at: [4, 4], text: "✕" }, { t: "label", at: [4, 5], text: "✕" }]),
+  "blocked-horse": () => boardArt([[4, 6, "N"], [4, 5, "p"]], null, [{ t: "x", at: [4, 5] }]),
+  "blocked-elephant": () => boardArt([[4, 6, "B"], [4, 5, "p"]], null, [{ t: "x", at: [4, 5] }]),
 };
 function renderArt(name) { return (ART[name] ? ART[name]() : ""); }
 
 /* ==================== 커리큘럼 데이터 ==================== */
-// 판 미니게임(움직임) — 상대 병 잡기 한 수 퍼즐 (단원 2)
+// 단원 2 — 기물 움직임 (상대 병 잡기 한 수 퍼즐)
 const MOVE_PUZZLES = {
   R: { glyph: "車", name: "차", desc: "차(車)는 가로·세로로 원하는 만큼 쭉 직진해요. 중간에 말이 막고 있으면 못 지나가요.",
     target: "e5", goal: "e9", pieces: [["d1", "K"], ["f10", "k"], ["e5", "R"], ["e9", "p"]] },
@@ -135,7 +150,11 @@ const MOVE_PUZZLES = {
 };
 function movePuzzle(key) {
   const p = MOVE_PUZZLES[key];
-  return { id: "u2_" + key, type: "puzzle", title: p.name, glyph: p.glyph, desc: p.desc, target: p.target, goal: p.goal, pieces: p.pieces };
+  return {
+    id: "u2_" + key, type: "puzzle", title: p.name, glyph: p.glyph, name: p.name, desc: p.desc,
+    task: `${p.name}(으)로 상대 병(兵)을 잡아 보세요!`, done: `좋아요! ${p.name}의 움직임을 익혔어요 🎉`,
+    target: p.target, goal: p.goal, pieces: p.pieces,
+  };
 }
 
 const CURRICULUM = [
@@ -187,14 +206,104 @@ const CURRICULUM = [
   },
   {
     id: "u2", title: "기물은 어떻게 움직여?", icon: "🧭", badge: "🎮", badgeName: "움직임 마스터", color: "blue",
-    lessons: ["R", "C", "N", "B", "A", "P", "K"].map(movePuzzle),
+    lessons: [
+      { id: "u2_intro", type: "story", title: "이제 직접 움직여요", pages: [
+        { art: "capture", title: "잡기 = 그 자리로 가기", text: "상대 말이 있는 자리로 내 말을 옮기면 그 말을 <b>잡아요</b>. 이제 기물마다 어떻게 가는지 직접 해봐요!" },
+      ] },
+      movePuzzle("R"), movePuzzle("C"), movePuzzle("N"),
+      { id: "u2_nblock", type: "story", title: "마의 멈춤", pages: [
+        { art: "blocked-horse", title: "앞이 막히면 못 뛰어요", text: "마(馬)는 가려는 쪽 <b>바로 앞 칸에 말이 있으면</b> 그 방향으로 못 뛰어요. 그래서 마 앞을 막는 게 좋은 수가 되기도 해요." },
+      ] },
+      movePuzzle("B"),
+      { id: "u2_bblock", type: "story", title: "상의 멈춤", pages: [
+        { art: "blocked-elephant", title: "상도 길목이 중요해요", text: "상(象)도 지나가는 <b>길목에 말이 있으면</b> 못 가요. 상은 멀리 가는 대신 길이 자주 막혀서 다루기가 까다로워요." },
+      ] },
+      movePuzzle("A"), movePuzzle("P"), movePuzzle("K"),
+    ],
   },
-  { id: "u3", title: "대국의 규칙", icon: "📏", locked: true, lessons: [] },
-  { id: "u4", title: "기초 전술", icon: "⚔️", locked: true, lessons: [] },
-  { id: "u5", title: "첫 대국 & 졸업", icon: "🎓", locked: true, lessons: [] },
+  {
+    id: "u3", title: "대국의 규칙", icon: "📏", badge: "📏", badgeName: "규칙 마스터", color: "orange",
+    lessons: [
+      { id: "u3_1", type: "story", title: "차례와 잡기", pages: [
+        { art: "turns", title: "한 번씩 번갈아", text: "두 사람이 <b>한 수씩 번갈아</b> 둬요. 한 번에 한 말만 움직일 수 있어요." },
+        { art: "capture", title: "겹치면 잡아요", text: "내 말을 상대 말 자리로 옮기면 그 말을 <b>잡아서</b> 판에서 빼요. 잡을지 말지는 내 마음!" },
+      ] },
+      { id: "u3_2", type: "story", title: "장군! (將軍)", pages: [
+        { art: "check", title: "장이 공격받으면 장군", text: "상대 말이 우리 <b>장(將)</b>을 잡을 수 있게 되면 <b>“장군!”</b> 이에요. 이땐 반드시 장을 지켜야 해요." },
+        { art: "check", title: "지키는 3가지 방법", text: "① 장을 <b>피하기</b> ② 사이를 <b>막기</b> ③ 공격한 말을 <b>잡기</b>. 셋 중 하나로 장군을 풀어야 해요." },
+      ] },
+      { id: "u3_3", type: "puzzle", glyph: "🛡️", title: "장군을 피해라", name: "장군 피하기",
+        desc: "지금 우리 장이 장군을 당했어요! 장을 안전한 자리로 옮겨 피해 보세요.",
+        task: "장군이에요! 장(楚)을 안전한 곳으로 피해요.", done: "휴~ 잘 피했어요! 🎉",
+        retry: "장을 안전한 자리로 옮겨요.", win: "escape",
+        target: "e2", goal: "d2", pieces: [["e2", "K"], ["d10", "k"], ["e10", "r"]] },
+      { id: "u3_4", type: "puzzle", glyph: "⚔️", title: "장군을 불러라", name: "장군 부르기",
+        desc: "우리 차를 움직여 상대 장에게 “장군!”을 불러 보세요.",
+        task: "차를 옮겨 상대 장에게 장군을 불러요!", done: "장군! 잘했어요 🎉",
+        retry: "상대 장이 공격받도록 차를 옮겨요.", win: "check",
+        target: "a5", goal: "e5", pieces: [["d1", "K"], ["e10", "k"], ["a5", "R"]] },
+      { id: "u3_5", type: "story", title: "외통 = 이기는 법", pages: [
+        { art: "checkmate", title: "피할 수 없는 장군", text: "장군을 당했는데 <b>피할 수도, 막을 수도, 잡을 수도 없으면</b> 그게 <b>외통</b>이에요. 외통을 만들면 이겨요!" },
+      ] },
+      { id: "u3_6", type: "puzzle", glyph: "👑", title: "외통 한 수", name: "외통 1수",
+        desc: "차를 옮겨 상대 장을 꼼짝 못 하게(외통) 만들어 이겨 보세요.",
+        task: "차를 옮겨 외통으로 이겨요!", done: "외통! 이겼어요 🏆",
+        retry: "상대 장이 도망갈 수 없게 만들어요.", win: "mate",
+        target: "a1", goal: "d1", pieces: [["f2", "K"], ["d10", "k"], ["e1", "R"], ["a1", "R"]] },
+      { id: "u3_7", type: "story", title: "알아두면 좋은 규칙", pages: [
+        { art: "bikjang", title: "장끼리 마주 보기 금지", text: "두 장이 <b>같은 줄에서 사이에 아무 말 없이 마주 보면</b> 안 돼요(빅장). 그렇게 되는 수는 둘 수 없어요." },
+        { art: "board-grid", title: "같은 수 반복·한수쉼", text: "똑같은 상황을 <b>계속 반복하면</b> 안 돼요. 또, 둘 곳이 마땅치 않으면 <b>한 수 쉬기</b>도 할 수 있어요." },
+      ] },
+      { id: "u3_q", type: "quiz", title: "확인 퀴즈", questions: [
+        { q: "우리 장이 공격받는 상태를 뭐라고 할까요?", art: "check", options: [{ t: "장군", ok: true }, { t: "외통" }, { t: "무승부" }], explain: "장이 공격받으면 '장군'! 반드시 지켜야 해요." },
+        { q: "장군을 푸는 방법이 아닌 것은?", options: [{ t: "그냥 무시하고 딴 수 두기", ok: true }, { t: "장을 피하기" }, { t: "공격한 말 잡기" }], explain: "장군은 무시할 수 없어요. 피하거나 막거나 잡아야 해요." },
+        { q: "상대 장을 꼼짝 못 하게 잡아 이기는 것은?", art: "checkmate", options: [{ t: "외통", ok: true }, { t: "빅장" }, { t: "한수쉼" }], explain: "피할 수 없는 장군 = 외통 = 승리!" },
+      ] },
+    ],
+  },
+  {
+    id: "u4", title: "기초 전술", icon: "⚔️", badge: "⚔️", badgeName: "꼬마 전략가", color: "purple",
+    lessons: [
+      { id: "u4_1", type: "story", title: "전술이 뭐예요?", pages: [
+        { art: "free-piece", title: "공짜 말은 냉큼!", text: "지켜주는 말이 없는 <b>공짜 말</b>은 얼른 잡아요. 반대로 <b>내 말은 공짜로 주지 않기!</b> 이게 전술의 시작이에요." },
+        { art: "values", title: "손해 보지 않기", text: "값이 큰 내 말(차·포)이 위험하면 얼른 피해요. 항상 <b>이득인지 손해인지</b> 셈해 보세요." },
+      ] },
+      { id: "u4_2", type: "puzzle", glyph: "🎁", title: "공짜 말 잡기", name: "공짜 말 잡기",
+        desc: "지켜주는 말이 없는 상대 마를 차로 잡아 이득을 봐요.",
+        task: "공짜로 놓인 상대 마(馬)를 차로 잡아요!", done: "이득! 잘 잡았어요 🎉",
+        retry: "공짜인 상대 마를 차로 잡아요.", win: "move",
+        target: "e3", goal: "e7", pieces: [["d1", "K"], ["e10", "k"], ["e3", "R"], ["e7", "n"]] },
+      { id: "u4_3", type: "puzzle", glyph: "🏃", title: "위험한 말 피하기", name: "말 지키기",
+        desc: "상대 차가 우리 차를 노리고 있어요! 안전한 곳으로 옮겨 지켜요.",
+        task: "위험한 우리 차를 안전한 곳으로 옮겨요!", done: "잘 지켰어요! 🎉",
+        retry: "상대가 잡을 수 없는 안전한 자리로 옮겨요.", win: "save",
+        target: "e5", goal: "a5", pieces: [["d1", "K"], ["f10", "k"], ["e5", "R"], ["e10", "r"]] },
+      { id: "u4_4", type: "puzzle", glyph: "✌️", title: "두 갈래 노리기", name: "양수겸장",
+        desc: "마를 옮겨 상대 차와 포를 한 번에 노려요. 상대는 하나밖에 못 지켜요!",
+        task: "마를 옮겨 차와 포를 동시에 노려요!", done: "두 갈래 성공! 하나는 꼭 잡아요 🎉",
+        retry: "차와 포를 동시에 노리는 자리로 마를 옮겨요.", win: "move",
+        target: "d5", goal: "e7", pieces: [["d1", "K"], ["e10", "k"], ["d5", "N"], ["c8", "r"], ["g8", "c"]] },
+      { id: "u4_q", type: "quiz", title: "확인 퀴즈", questions: [
+        { q: "지켜주는 말이 없는 상대 말을 보면?", art: "free-piece", options: [{ t: "얼른 잡는다", ok: true }, { t: "그냥 둔다" }, { t: "내 말을 준다" }], explain: "공짜 말은 냉큼 잡아 이득을 봐요!" },
+        { q: "값이 큰 내 차가 위험하면?", options: [{ t: "안전한 곳으로 피한다", ok: true }, { t: "그냥 둔다" }, { t: "상대에게 준다" }], explain: "값이 큰 말일수록 잃지 않게 지켜요." },
+        { q: "한 수로 두 말을 동시에 노리는 것을?", art: "fork", options: [{ t: "두 갈래(양수겸장)", ok: true }, { t: "한수쉼" }, { t: "빅장" }], explain: "두 개를 동시에 노리면 상대는 하나밖에 못 지켜요!" },
+      ] },
+    ],
+  },
+  {
+    id: "u5", title: "첫 대국 & 졸업", icon: "🎓", badge: "🎓", badgeName: "15급", color: "green",
+    lessons: [
+      { id: "u5_exam", type: "quiz", title: "졸업 시험", questions: [
+        { q: "마(馬)는 어떻게 움직일까요?", options: [{ t: "ㄱ자로 뛴다", ok: true }, { t: "직선으로 쭉" }, { t: "대각선으로만" }], explain: "마는 ㄱ자! 한 칸 직진 후 대각선 한 칸." },
+        { q: "포(包)가 움직이려면 필요한 것은?", options: [{ t: "넘어갈 말 하나", ok: true }, { t: "아무것도 필요 없음" }, { t: "상대 장" }], explain: "포는 다른 말 하나를 넘어서 움직여요(포는 못 넘음)." },
+        { q: "장군을 당하면 반드시?", art: "check", options: [{ t: "장을 지킨다(피·막·잡)", ok: true }, { t: "무시한다" }, { t: "항복한다" }], explain: "장군은 반드시 풀어야 해요: 피하거나 막거나 잡기." },
+        { q: "가장 값이 높은 말은?", art: "values", options: [{ t: "차(車)", ok: true }, { t: "졸(卒)" }, { t: "상(象)" }], explain: "차 13점! 가장 힘센 말이에요." },
+        { q: "상대 장을 꼼짝 못 하게 잡아 이기는 것은?", art: "checkmate", options: [{ t: "외통", ok: true }, { t: "장군" }, { t: "무승부" }], explain: "피할 수 없는 장군 = 외통 = 승리!" },
+      ] },
+    ],
+  },
 ];
 
-// 빠른 조회용 인덱스
 const LESSON_INDEX = {};
 CURRICULUM.forEach((u, ui) => u.lessons.forEach((l, li) => { LESSON_INDEX[l.id] = { unit: u, ui, lesson: l, li }; }));
 const ALL_LESSON_IDS = CURRICULUM.flatMap((u) => u.lessons.map((l) => l.id));
@@ -206,9 +315,8 @@ function saveDone() { try { localStorage.setItem(STORE, JSON.stringify([...done]
 let done = loadDone();
 function unitDone(u) { return u.lessons.length > 0 && u.lessons.every((l) => done.has(l.id)); }
 
-/* ==================== 공통 상태 ==================== */
 let board = null;
-let cur = null; // 현재 레슨 컨텍스트
+let cur = null;
 
 /* ==================== 학습 지도 ==================== */
 function showPath() {
@@ -218,7 +326,7 @@ function showPath() {
 }
 function renderPath() {
   const el = $("path-list");
-  el.innerHTML = CURRICULUM.map((u, ui) => {
+  el.innerHTML = CURRICULUM.map((u) => {
     const udone = unitDone(u);
     if (u.locked) {
       return `<div class="unit locked"><div class="unit-head"><span class="unit-icon">${u.icon}</span>
@@ -256,7 +364,6 @@ function completeLesson(id) {
   const wasDone = done.has(id);
   done.add(id); saveDone();
   const ctx = LESSON_INDEX[id];
-  // 단원을 이번에 완성했으면 배지
   if (!wasDone && unitDone(ctx.unit)) showBadge(ctx.unit);
 }
 function nextLessonId(id) {
@@ -268,11 +375,7 @@ function nextLessonId(id) {
 }
 
 /* ==================== 이야기 엔진 ==================== */
-function startStory() {
-  $("story-view").classList.remove("hidden");
-  cur.page = 0;
-  renderStory();
-}
+function startStory() { $("story-view").classList.remove("hidden"); cur.page = 0; renderStory(); }
 function renderStory() {
   const l = cur.lesson, p = l.pages[cur.page];
   $("story-art").innerHTML = renderArt(p.art);
@@ -288,18 +391,13 @@ function storyNext() {
 }
 
 /* ==================== 퀴즈 엔진 ==================== */
-function startQuiz() {
-  $("quiz-view").classList.remove("hidden");
-  cur.qIndex = 0;
-  renderQuiz();
-}
+function startQuiz() { $("quiz-view").classList.remove("hidden"); cur.qIndex = 0; renderQuiz(); }
 function renderQuiz() {
   const qs = cur.lesson.questions, q = qs[cur.qIndex];
   $("quiz-progress").textContent = `${cur.qIndex + 1} / ${qs.length}`;
   $("quiz-art").innerHTML = q.art ? renderArt(q.art) : "";
   $("quiz-q").textContent = q.q;
-  $("quiz-feedback").textContent = "";
-  $("quiz-feedback").className = "quiz-feedback";
+  $("quiz-feedback").textContent = ""; $("quiz-feedback").className = "quiz-feedback";
   $("quiz-next").disabled = true;
   const opts = $("quiz-options");
   opts.innerHTML = q.options.map((o, i) => `<button class="quiz-opt" data-i="${i}" type="button">${o.t}</button>`).join("");
@@ -310,16 +408,12 @@ function answerQuiz(i, btn) {
   if (q.options[i].ok) {
     btn.classList.add("correct");
     $("quiz-options").querySelectorAll(".quiz-opt").forEach((b) => (b.disabled = true));
-    const fb = $("quiz-feedback");
-    fb.className = "quiz-feedback ok";
-    fb.innerHTML = "정답이에요! " + (q.explain || "");
+    const fb = $("quiz-feedback"); fb.className = "quiz-feedback ok"; fb.innerHTML = "정답이에요! " + (q.explain || "");
     $("quiz-next").disabled = false;
     $("quiz-next").textContent = cur.qIndex === cur.lesson.questions.length - 1 ? "완료 ✓" : "다음 →";
   } else {
     btn.classList.add("wrong"); btn.disabled = true;
-    const fb = $("quiz-feedback");
-    fb.className = "quiz-feedback no";
-    fb.textContent = "다시 한 번 골라볼까요?";
+    const fb = $("quiz-feedback"); fb.className = "quiz-feedback no"; fb.textContent = "다시 한 번 골라볼까요?";
   }
 }
 function quizNext() {
@@ -338,71 +432,89 @@ let pz = { armed: false, wrongs: 0 };
 function startPuzzle() {
   $("puzzle-view").classList.remove("hidden");
   const l = cur.lesson;
-  $("lesson-glyph").textContent = l.glyph;
-  $("lesson-name").textContent = l.name;
-  $("lesson-desc").textContent = l.desc;
+  $("lesson-glyph").textContent = l.glyph || "🎯";
+  $("lesson-name").textContent = l.name || l.title;
+  $("lesson-desc").textContent = l.desc || "";
   $("puzzle-next").classList.add("hidden");
   loadPuzzle();
 }
 function loadPuzzle() {
   const l = cur.lesson;
   pz.armed = false; pz.wrongs = 0;
-  board.loadState({ startFen: makeFen(l.pieces, "w"), moves: [] });
+  board.loadState({ startFen: makeFen(l.pieces, l.turn || "w"), moves: [] });
   board.setMySide("cho");
-  board.selected = l.target;
-  board.render();
+  if (l.target) { board.selected = l.target; board.render(); }
   pz.armed = true;
-  setTask(`${l.name}(으)로 상대 병(兵)을 잡아 보세요!`, false);
-  $("hint-btn").disabled = false;
+  setTask(l.task || `${l.name}(으)로 상대 병(兵)을 잡아 보세요!`, false);
+  $("hint-btn").disabled = !(l.target && l.goal);
   $("puzzle-next").classList.add("hidden");
 }
 function setTask(text, ok) { const el = $("task-banner"); el.textContent = text; el.className = "task-banner" + (ok ? " ok" : ""); }
+
+// 목표 달성 판정 (win 종류별)
+function puzzleSolved(mv, l) {
+  const w = l.win || "move";
+  if (w === "check") return board.isCheck();
+  if (w === "mate") return board.isGameOver() && board.isCheck();
+  if (w === "escape") return true; // 장군 위치에선 합법 수 = 모두 회피
+  if (w === "save") {
+    if (!mv || mv.from !== l.target) return false;
+    return !board.legal.some((m) => { const p = board.parseMove(m); return p && p.to === mv.to; });
+  }
+  return mv && mv.from === l.target && mv.to === l.goal;
+}
 function onBoardMove() {
   if (!pz.armed) return;
   const moves = board.getState().moves;
   if (!moves.length) return;
   const l = cur.lesson;
   const mv = board.parseMove(moves[moves.length - 1]);
-  if (mv && mv.from === l.target && mv.to === l.goal) {
+  if (puzzleSolved(mv, l)) {
     pz.armed = false;
-    checkFx("잘했어요!");
-    setTask(`좋아요! ${l.name}의 움직임을 익혔어요 🎉`, true);
+    checkFx(l.win === "mate" ? "외통!" : "잘했어요!");
+    setTask(l.done || "좋아요! 잘 해냈어요 🎉", true);
     board.setHint(null); $("hint-btn").disabled = true;
     $("puzzle-next").classList.remove("hidden");
     $("puzzle-next").textContent = nextLessonId(cur.id) ? "다음 →" : "목록으로 ✓";
     completeLesson(cur.id);
   } else {
     pz.wrongs++; pz.armed = false;
-    board.undo(); board.selected = l.target; board.render(); pz.armed = true;
-    if (pz.wrongs >= 2) { board.setHint(l.target + l.goal); toast("힌트 화살표를 따라가 보세요!"); }
-    else toast("그 수 말고, 상대 병(兵)을 잡아 보세요.");
+    board.undo();
+    if (l.target) board.selected = l.target;
+    board.render(); pz.armed = true;
+    if (pz.wrongs >= 2 && l.target && l.goal) { board.setHint(l.target + l.goal); toast("힌트 화살표를 따라가 보세요!"); }
+    else toast(l.retry || "다시 해볼까요?");
   }
 }
 
 /* ==================== 공통: 레슨 후 처리 ==================== */
 function afterLesson() {
-  // 배지 오버레이가 떠 있으면 그쪽 버튼으로 진행
-  if (!$("badge-overlay").classList.contains("hidden")) return;
+  if (!$("badge-overlay").classList.contains("hidden")) return; // 배지 오버레이가 처리
   goNextOrPath();
 }
-function goNextOrPath() {
-  const nid = nextLessonId(cur.id);
-  if (nid) openLesson(nid); else showPath();
-}
+function goNextOrPath() { const nid = nextLessonId(cur.id); if (nid) openLesson(nid); else showPath(); }
 
-/* ==================== 배지 / 축하 ==================== */
-let pendingAfterBadge = null;
+/* ==================== 배지 / 수료증 ==================== */
+let certMode = false, pendingAfterBadge = null;
 function showBadge(unit) {
+  certMode = unit.id === "u5";
   $("badge-emoji").textContent = unit.badge;
-  $("badge-title").textContent = `${unit.title} 완료!`;
-  $("badge-sub").innerHTML = `<b>${unit.badge} ${unit.badgeName}</b> 배지를 얻었어요!`;
   const nid = nextLessonId(cur.id);
-  $("badge-next").textContent = nid ? "다음 단원 →" : "학습 지도로";
+  if (certMode) {
+    $("badge-title").textContent = "🎓 15급 수료증!";
+    $("badge-sub").innerHTML = "축하해요! 이제 <b>정식 대국</b>을 둘 수 있어요. AI와 15급으로 도전해 볼까요?";
+    $("badge-next").textContent = "🤖 AI와 대국 도전 →";
+  } else {
+    $("badge-title").textContent = `${unit.title} 완료!`;
+    $("badge-sub").innerHTML = `<b>${unit.badge} ${unit.badgeName}</b> 배지를 얻었어요!`;
+    $("badge-next").textContent = nid ? "다음 단원 →" : "학습 지도로";
+  }
   pendingAfterBadge = nid;
   $("badge-overlay").classList.remove("hidden");
 }
 function closeBadge(goNext) {
   $("badge-overlay").classList.add("hidden");
+  if (certMode && goNext) { location.href = "vs-ai.html"; return; } // 수료증의 'AI 대국 도전'만 이동
   if (goNext && pendingAfterBadge) openLesson(pendingAfterBadge);
   else showPath();
 }
@@ -418,7 +530,6 @@ async function boot() {
   board.onMove = onBoardMove;
   board.onBlocked = toast;
   await board.init();
-  // 이야기/퀴즈 중엔 판이 안 보이지만, 퍼즐 대비해 미리 init.
   $("board").addEventListener("click", (e) => { if (!pz.armed) e.stopImmediatePropagation(); }, true);
 
   $("story-prev").onclick = () => { if (cur.page > 0) { cur.page--; renderStory(); } };
@@ -427,7 +538,7 @@ async function boot() {
   $("quiz-next").onclick = quizNext;
   $("quiz-list").onclick = showPath;
   $("reset-btn").onclick = loadPuzzle;
-  $("hint-btn").onclick = () => board.setHint(cur.lesson.target + cur.lesson.goal);
+  $("hint-btn").onclick = () => { if (cur.lesson.target && cur.lesson.goal) board.setHint(cur.lesson.target + cur.lesson.goal); };
   $("puzzle-next").onclick = goNextOrPath;
   $("puzzle-list").onclick = showPath;
   $("badge-next").onclick = () => closeBadge(true);
