@@ -8,6 +8,10 @@ const $ = (id) => document.getElementById(id);
 const CHO = "#2f6be6", HAN = "#ef5b4c", BODY = "#f7f0dc", LINE = "#6b4a23", WOOD = "#e8c887";
 const G = { K: "楚", k: "漢", R: "車", r: "車", C: "包", c: "包", N: "馬", n: "馬", B: "象", b: "象", A: "士", a: "士", P: "卒", p: "兵" };
 
+// 기물별 크기 비율 (장 크게 … 졸 작게) — 실제 판과 같은 느낌으로
+const PRATIO = { K: 1.0, R: 0.92, C: 0.86, N: 0.8, B: 0.8, A: 0.72, P: 0.66 };
+const pratio = (letter) => PRATIO[letter.toUpperCase()] || 0.8;
+
 function octPts(cx, cy, r) {
   const c = r * 0.4142;
   return [[-c, -r], [c, -r], [r, -c], [r, c], [c, r], [-c, r], [-r, c], [-r, -c]]
@@ -38,7 +42,7 @@ function boardArt(pieces = [], hi = null) {
   for (let c = 0; c < CW; c++) s += `<line x1="${x(c)}" y1="${y(0)}" x2="${x(c)}" y2="${y(CH - 1)}" stroke="${LINE}" stroke-width="1"/>`;
   const pal = (c0, r0) => `<line x1="${x(c0)}" y1="${y(r0)}" x2="${x(c0 + 2)}" y2="${y(r0 + 2)}" stroke="${LINE}" stroke-width="1"/><line x1="${x(c0 + 2)}" y1="${y(r0)}" x2="${x(c0)}" y2="${y(r0 + 2)}" stroke="${LINE}" stroke-width="1"/>`;
   s += pal(3, 0) + pal(3, 7);
-  for (const [c, r, letter] of pieces) s += pc(letter, x(c), y(r), cell * 0.44);
+  for (const [c, r, letter] of pieces) s += pc(letter, x(c), y(r), cell * 0.5 * pratio(letter));
   return svg(W, H, s);
 }
 const START_PIECES = [
@@ -60,7 +64,7 @@ function rowArt(groups) {
   const W = x + 6, H = r * 2 + padY + 26;
   let s = "";
   for (const { cx, g } of rows) {
-    s += pc(g.letter, cx, r + 12, r);
+    s += pc(g.letter, cx, r + 12, r * pratio(g.letter));
     s += `<text x="${cx}" y="${r * 2 + padY + 8}" text-anchor="middle" font-size="15" font-weight="800" fill="#2e2c3a">${g.name}${g.count ? " ×" + g.count : ""}</text>`;
   }
   return svg(W, H, s);
@@ -101,7 +105,7 @@ const ART = {
     const r = 24, gap = 16; let x = 18; let s = "";
     for (const [L, nm, v] of items) {
       const cx = x + r;
-      s += pc(L, cx, r + 10, r);
+      s += pc(L, cx, r + 10, r * pratio(L));
       s += `<text x="${cx}" y="${r * 2 + 30}" text-anchor="middle" font-size="14" font-weight="800" fill="#2e2c3a">${nm}</text>`;
       s += `<text x="${cx}" y="${r * 2 + 48}" text-anchor="middle" font-size="16" font-weight="900" fill="${CHO}">${v}점</text>`;
       x += r * 2 + gap;
